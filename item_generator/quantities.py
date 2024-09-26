@@ -324,51 +324,48 @@ class Quantities:
 
         return digits, suffix
 
-    def combine_digits(self, number: str | int) -> np.ndarray:
-        numbers = list(str(number))
+    def build_digit_image(self, digits: str, suffix: str):
+        numbers = list(str(digits))
         number_arrays = list()
         for n in numbers:
             number_arrays.append(self.map_digits(n))
             if n != "1":
                 number_arrays.append(self.space)
-        return np.concatenate(number_arrays, axis=1)
 
+        number_array = np.concatenate(number_arrays, axis=1)
 
-def add_color(number_array, suffix: str | None = None):
-    mask_foreground = number_array == DigitEnum.foreground
-    mask_shadow = number_array == DigitEnum.shadow
+        mask_foreground = number_array == DigitEnum.foreground
+        mask_shadow = number_array == DigitEnum.shadow
 
-    yellow = np.array([1, 1, 0])  # for sub K = 1e0
-    white = np.array([1, 1, 1])  # for K = 1e3
-    green = np.array([0, 255, 128]) / 255  # for M = 1e6
-    blue = np.array([102, 152, 255]) / 255  # for B = 1e9
-    purple = np.array([189, 50, 243]) / 255  # for T = 1e12
-    orange = np.array([255, 129, 0]) / 255  # for Q = 1e15
-    black = np.array([0, 0, 0])
+        yellow = np.array([1, 1, 0])  # for sub K = 1e0
+        white = np.array([1, 1, 1])  # for K = 1e3
+        green = np.array([0, 255, 128]) / 255  # for M = 1e6
+        blue = np.array([102, 152, 255]) / 255  # for B = 1e9
+        purple = np.array([189, 50, 243]) / 255  # for T = 1e12
+        orange = np.array([255, 129, 0]) / 255  # for Q = 1e15
+        black = np.array([0, 0, 0])
 
-    if suffix is None:
-        color = yellow
-    elif suffix.lower() == "k":
-        color = white
-    elif suffix.lower() == "m":
-        color = green
-    elif suffix.lower() == "b":
-        color = blue
-    elif suffix.lower() == "t":
-        color = purple
-    elif suffix.lower() == "q":
-        color = orange
-    else:
-        raise ValueError(f"Unknown suffix `{suffix}`!")
+        if suffix is None:
+            color = yellow
+        elif suffix.lower() == "k":
+            color = white
+        elif suffix.lower() == "m":
+            color = green
+        elif suffix.lower() == "b":
+            color = blue
+        elif suffix.lower() == "t":
+            color = purple
+        elif suffix.lower() == "q":
+            color = orange
+        else:
+            raise ValueError(f"Unknown suffix `{suffix}`!")
 
-    color_array = np.ones(number_array.shape[:2] + (3,))
-    color_array[mask_foreground] = color
-    color_array[mask_shadow] = black
-    return color_array
+        color_array = np.ones(number_array.shape[:2] + (3,))
+        color_array[mask_foreground] = color
+        color_array[mask_shadow] = black
+        return color_array
 
-
-digit = "2184"
-number_array = combine_digits(digit, digits)
-color_array = add_color(number_array)
-
-plt.imshow(color_array)
+    def __call__(self, number: str | int) -> np.ndarray:
+        digits, suffix = self.parse_number(number)
+        digit_image = self.build_digit_image(digits, suffix)
+        return digit_image
