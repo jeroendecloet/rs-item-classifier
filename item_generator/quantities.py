@@ -252,7 +252,7 @@ class Quantities:
     @staticmethod
     def suffix_to_multiplier(suffix: str) -> float:
         """ Converts a suffix (k, m, b, q or t) to a multiplier (1e3, 1e6, ...). """
-        if suffix is None:
+        if (suffix is None) or (suffix == ""):
             return 1
         elif suffix.lower() == "k":
             return 1e3
@@ -264,6 +264,8 @@ class Quantities:
             return 1e12
         elif suffix.lower() == "t":
             return 1e15
+        else:
+            raise ValueError(f"Unknown suffix `{suffix}`")
 
     def parse_number(self, number: str | int | float) -> (str, str):
         """
@@ -284,7 +286,7 @@ class Quantities:
         ("1", "k")
         """
         if isinstance(number, str):
-            regex = r"\d+([kKmMbBtTqQ]?)"
+            regex = r"(\d+)([kKmMbBtTqQ]?)"
             result = re.search(regex, number)
             if result:
                 digits, suffix = result.groups()
@@ -332,8 +334,11 @@ class Quantities:
             if n != "1":
                 number_arrays.append(self.space)
 
+        if (suffix is not None) and (suffix != ""):
+            number_arrays.append(getattr(self, suffix))
         number_array = np.concatenate(number_arrays, axis=1)
 
+        mask_background = number_array == DigitEnum.background
         mask_foreground = number_array == DigitEnum.foreground
         mask_shadow = number_array == DigitEnum.shadow
 
@@ -361,11 +366,13 @@ class Quantities:
             raise ValueError(f"Unknown suffix `{suffix}`!")
 
         color_array = np.ones(number_array.shape[:2] + (3,))
+        color_array[mask_background] = -1  # For easy detection & removal later
         color_array[mask_foreground] = color
         color_array[mask_shadow] = black
         return color_array
 
     def __call__(self, number: str | int) -> np.ndarray:
         digits, suffix = self.parse_number(number)
+        print(digits, suffix)
         digit_image = self.build_digit_image(digits, suffix)
         return digit_image
