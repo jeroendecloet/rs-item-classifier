@@ -365,10 +365,10 @@ class Quantities:
         else:
             raise ValueError(f"Unknown suffix `{suffix}`!")
 
-        color_array = np.ones(number_array.shape[:2] + (3,))
-        color_array[mask_background] = -1  # For easy detection & removal later
-        color_array[mask_foreground] = color
-        color_array[mask_shadow] = black
+        color_array = np.ones(number_array.shape[:2] + (4,))
+        color_array[mask_background] = black + (0,)  # Set alpha to 0 for transparency
+        color_array[mask_foreground] = color + (1,)
+        color_array[mask_shadow] = black + (1,)
         return color_array
 
     def __call__(self, number: str | int) -> np.ndarray:
