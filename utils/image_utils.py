@@ -6,7 +6,8 @@ import numpy as np
 def load_png(filename) -> np.ndarray:
     """ Loads a PNG image and returns it as numpy array with format (H, W, C). """
     image = Image.open(filename)
-    return np.array(image)
+    image_rgba = image.convert("RGBA")
+    return np.array(image_rgba)
 
 
 def identify_shape(shape: tuple) -> str:

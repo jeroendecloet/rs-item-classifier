@@ -342,15 +342,15 @@ class Quantities:
         mask_foreground = number_array == DigitEnum.foreground
         mask_shadow = number_array == DigitEnum.shadow
 
-        yellow = np.array([1, 1, 0])  # for sub K = 1e0
-        white = np.array([1, 1, 1])  # for K = 1e3
-        green = np.array([0, 255, 128]) / 255  # for M = 1e6
-        blue = np.array([102, 152, 255]) / 255  # for B = 1e9
-        purple = np.array([189, 50, 243]) / 255  # for T = 1e12
-        orange = np.array([255, 129, 0]) / 255  # for Q = 1e15
-        black = np.array([0, 0, 0])
+        yellow = np.array([1, 1, 0, 1])  # for sub K = 1e0
+        white = np.array([1, 1, 1, 1])  # for K = 1e3
+        green = np.array([0, 255, 128, 255]) / 255  # for M = 1e6
+        blue = np.array([102, 152, 255, 255]) / 255  # for B = 1e9
+        purple = np.array([189, 50, 243, 255]) / 255  # for T = 1e12
+        orange = np.array([255, 129, 0, 255]) / 255  # for Q = 1e15
+        black = np.array([0, 0, 0, 1])
 
-        if suffix is None:
+        if (suffix is None) or (suffix == ""):
             color = yellow
         elif suffix.lower() == "k":
             color = white
@@ -366,13 +366,12 @@ class Quantities:
             raise ValueError(f"Unknown suffix `{suffix}`!")
 
         color_array = np.ones(number_array.shape[:2] + (4,))
-        color_array[mask_background] = black + (0,)  # Set alpha to 0 for transparency
-        color_array[mask_foreground] = color + (1,)
-        color_array[mask_shadow] = black + (1,)
+        color_array[mask_background] = np.array([0, 0, 0, 0])  # Set alpha to 0 for transparency
+        color_array[mask_foreground] = color
+        color_array[mask_shadow] = black
         return color_array
 
     def __call__(self, number: str | int) -> np.ndarray:
         digits, suffix = self.parse_number(number)
-        print(digits, suffix)
         digit_image = self.build_digit_image(digits, suffix)
         return digit_image

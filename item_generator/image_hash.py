@@ -2,6 +2,7 @@ from pathlib import Path
 import imagehash
 from collections import defaultdict
 from multiprocessing import Pool, cpu_count
+from PIL import Image
 
 from utils import image_utils as iu
 
@@ -15,7 +16,7 @@ class ImageHash:
     def compute_hash(image_filename: str) -> (str, imagehash.ImageHash | None):
         """ Compute perceptual hashes for all images """
         try:
-            with iu.load_png(image_filename) as img:
+            with Image.open(image_filename) as img:
                 # You can choose different hash functions: average_hash, phash, dhash, whash
                 hash_value = imagehash.phash(img)
                 return image_filename, hash_value
