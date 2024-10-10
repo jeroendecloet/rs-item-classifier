@@ -1,0 +1,22 @@
+# Ignore all directories except a few
+/*
+
+!item_generator/
+!item_generator/**
+!utils/
+!utils/**
+!wiki/
+!wiki/**
+
+*py[cod]
+*.log
+*.ipynb_checkpoints/
+.idea/
+__pycache__/
+
+.DS_Store
+Thumbs.db
+
+# Keep specific files
+!.gitignore
+!README.md
