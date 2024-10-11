@@ -33,15 +33,15 @@ class BaseBackground:
 
     def sample_patch(self, image: np.ndarray, size: tuple[int, int]) -> np.ndarray:
         """ Samples a patch from the selected image. """
-        h, w = image.shape[-2:]
+        h, w = image.shape[:2]
         h_selected = self.rng.integers(low=0, high=h - size[0])
         w_selected = self.rng.integers(low=0, high=w - size[1])
-        return image[..., h_selected:h_selected + size[0], w_selected:w_selected + size[1]]
+        return image[h_selected:h_selected + size[0], w_selected:w_selected + size[1]]
 
     def __call__(self, size: tuple[int, int]) -> np.ndarray:
         image_filename = next(iter(self.sample_image()))
         image = iu.load_png(image_filename)
-        image = iu.convert_dimensions(image, "chw")
+        image = iu.convert_dimensions(image, "hwc")
         patch = self.sample_patch(image, size=size)
         return patch
 

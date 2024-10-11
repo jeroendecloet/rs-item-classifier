@@ -1,9 +1,10 @@
 import re
 from enum import Enum
-import numpy as np
-import matplotlib.pyplot as plt
 
-class DigitEnum:
+import numpy as np
+
+
+class DigitEnum(Enum):
     background = 0
     foreground = 1
     shadow = 2
@@ -301,13 +302,13 @@ class Quantities:
         elif isinstance(number, (int, float)):
             # Convert float to int
             number_ = int(number)
-            if number_ < 1e3:
+            if number_ < 1e5:
                 digits = str(number_)
                 suffix = ""
-            elif 1e3 <= number_ < 1e6:
+            elif 1e5 <= number_ < 1e7:
                 digits = str(int(np.floor(number_ / 1e3)))
                 suffix = "k"
-            elif 1e6 <= number_ < 1e9:
+            elif 1e7 <= number_ < 1e9:
                 digits = str(int(np.floor(number_ / 1e6)))
                 suffix = "m"
             elif 1e9 <= number_ < 1e12:
@@ -338,9 +339,9 @@ class Quantities:
             number_arrays.append(getattr(self, suffix))
         number_array = np.concatenate(number_arrays, axis=1)
 
-        mask_background = number_array == DigitEnum.background
-        mask_foreground = number_array == DigitEnum.foreground
-        mask_shadow = number_array == DigitEnum.shadow
+        mask_background = number_array == DigitEnum.background.value
+        mask_foreground = number_array == DigitEnum.foreground.value
+        mask_shadow = number_array == DigitEnum.shadow.value
 
         yellow = np.array([1, 1, 0, 1])  # for sub K = 1e0
         white = np.array([1, 1, 1, 1])  # for K = 1e3
@@ -375,3 +376,36 @@ class Quantities:
         digits, suffix = self.parse_number(number)
         digit_image = self.build_digit_image(digits, suffix)
         return digit_image
+
+
+class QuantityGenerator:
+    """ Class for generating random digits. """
+    rng: np.random.Generator
+
+    def __init__(self, seed: int = 46) -> None:
+        self.rng = np.random.default_rng(seed=seed)
+        self.letters = list(" kmbqt")
+        # TODO: Find better distribution
+        # TODO: also include 0
+        self.letter_probabilities = np.array([9, 4, 4, 2, 1, 1], dtype=float)
+        self.letter_probabilities /= np.sum(self.letter_probabilities)
+        self.quantities = Quantities()
+
+    def generate_number(self):
+        """ Generates a letter and a corresponding number."""
+        # First pick a letter
+        letter = self.rng.choice(self.letters, p=self.letter_probabilities)
+        if letter == " ":
+            max_value = 99999
+        elif letter == "k":
+            max_value = 9999
+        else:
+            max_value = 999
+        digit = self.rng.integers(max_value)
+        return f"{digit}{letter}"
+
+    def __call__(self, number: str | int = None) -> np.ndarray:
+        if number is None:
+            number = self.generate_number()
+        number_image = self.quantities(number)
+        return number_image
